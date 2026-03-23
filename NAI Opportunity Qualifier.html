@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NAI Opportunity Qualifier</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --brand:#7c5cfc; --brand-mid:#9478fd; --brand-light:#f0ecff; --brand-dark:#3d2c9c;
+  --nav-bg:#12101e; --nav-border:rgba(124,92,252,0.22);
+  --surface:#ffffff; --bg:#f5f4fb; --border:#e2ddf5;
+  --text:#1a1826; --muted:#635e80; --faint:#a8a3c4;
+  --green:#0e7a52; --green-bg:#e4f5ed; --green-bd:#9fd9bc;
+  --red:#b83232;   --red-bg:#fce8e8;   --red-bd:#f0b8b8;
+  --amber:#8a5c10; --amber-bg:#fdf2d8; --amber-bd:#f0d898;
+  --radius:11px;   --shadow:0 2px 18px rgba(60,30,140,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:15px;line-height:1.6}
+
+nav{background:var(--nav-bg);padding:0 22px;display:flex;align-items:center;height:52px;border-bottom:1px solid var(--nav-border);}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;color:#fff;letter-spacing:-.2px;}
+.nav-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.nav-badge{font-size:10px;font-weight:600;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:20px;background:rgba(124,92,252,0.28);color:#c4b8f8;border:1px solid rgba(124,92,252,0.35);}
+.nav-right{margin-left:auto;font-size:11px;color:rgba(255,255,255,0.28);font-family:'DM Mono',monospace;}
+
+.main{display:grid;grid-template-columns:1fr 420px;height:calc(100vh - 52px);overflow:hidden;}
+
+/* LEFT */
+.panel-left{overflow-y:auto;padding:20px 24px;border-right:1px solid var(--border);}
+.panel-heading{display:flex;align-items:center;gap:7px;margin-bottom:14px;}
+.panel-heading h2{font-size:14px;font-weight:600;}
+.h-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+
+.scorecard{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.sc-item{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 5px;text-align:center;}
+.sc-label{font-size:9px;color:var(--faint);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.sc-val{font-size:17px;font-weight:600;}
+.sc-val.pass{color:var(--green)} .sc-val.fail{color:var(--red)} .sc-val.warn{color:var(--amber)} .sc-val.pend{color:var(--faint)}
+
+.prog-meta{display:flex;justify-content:space-between;margin-bottom:4px;}
+.prog-lbl{font-size:10.5px;color:var(--faint);font-family:'DM Mono',monospace;}
+.prog-wrap{background:var(--border);border-radius:4px;height:3px;margin-bottom:14px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-mid));border-radius:4px;transition:width .4s ease;}
+
+/* SECTION DIVIDER */
+.sec-divider{display:flex;align-items:center;gap:7px;margin:12px 0 8px;}
+.sec-divider span{font-size:9.5px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.sd-infra    {background:var(--brand-light);color:var(--brand-dark);}
+.sd-hardware {background:var(--amber-bg);color:var(--amber);}
+.sd-usecase  {background:var(--green-bg);color:var(--green);}
+.sd-complexity{background:#fce8e8;color:#8a2020;}
+.sd-line{flex:1;height:1px;background:var(--border);}
+
+/* ANSWERED */
+.answered-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);margin-bottom:4px;background:var(--bg);font-size:12px;}
+.a-ic{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.a-ic.yes{background:var(--green-bg);color:var(--green);} .a-ic.no{background:var(--red-bg);color:var(--red);} .a-ic.unsure{background:var(--amber-bg);color:var(--amber);}
+.a-q{font-weight:500;line-height:1.4;} .a-m{font-size:10px;color:var(--faint);margin-top:1px;}
+
+/* NAV BUTTONS ROW */
+.nav-btn-row{display:flex;gap:7px;margin-bottom:10px;}
+.btn-back{display:flex;align-items:center;gap:4px;background:none;border:1px solid var(--border);border-radius:7px;padding:5px 11px;font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-back:hover{border-color:var(--brand);color:var(--brand);}
+.btn-reset{display:flex;align-items:center;gap:4px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px;padding:5px 11px;font-size:11.5px;font-weight:600;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-reset:hover{background:#fad0d0;border-color:#e09090;}
+
+/* QUESTION CARD */
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);animation:slideUp .22s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.q-text{font-size:14.5px;font-weight:500;line-height:1.5;margin-bottom:5px;}
+.q-hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:7px;}
+.q-src{font-size:10px;color:var(--faint);font-family:'DM Mono',monospace;border-left:2px solid var(--border);padding-left:7px;margin-bottom:12px;line-height:1.5;}
+.btn-row{display:flex;gap:6px;}
+.btn-ans{flex:1;padding:7px 0;border-radius:7px;font-size:12.5px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:1.5px solid transparent;transition:all .15s;}
+.btn-ans.yes   {background:var(--green-bg);color:var(--green);border-color:var(--green-bd);} .btn-ans.yes:hover{background:#c5ead7;}
+.btn-ans.no    {background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}       .btn-ans.no:hover{background:#fad0d0;}
+.btn-ans.unsure{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd);}  .btn-ans.unsure:hover{background:#fbe4a0;}
+
+/* VERDICT */
+.verdict-card{border-radius:var(--radius);padding:16px;margin-bottom:10px;animation:slideUp .3s ease;}
+.verdict-card.green{background:var(--green-bg);border:1.5px solid var(--green-bd);}
+.verdict-card.amber{background:var(--amber-bg);border:1.5px solid var(--amber-bd);}
+.verdict-card.red  {background:var(--red-bg);  border:1.5px solid var(--red-bd);}
+.v-badge{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-family:'DM Mono',monospace;display:block;margin-bottom:4px;}
+.verdict-card.green .v-badge{color:var(--green)} .verdict-card.amber .v-badge{color:var(--amber)} .verdict-card.red .v-badge{color:var(--red)}
+.v-title{font-size:15px;font-weight:600;margin-bottom:6px;}
+.verdict-card.green .v-title{color:var(--green)} .verdict-card.amber .v-title{color:var(--amber)} .verdict-card.red .v-title{color:var(--red)}
+.v-body{font-size:12.5px;line-height:1.6;color:var(--text);}
+.v-body p{margin-bottom:6px;} .v-body ul{padding-left:14px;margin-bottom:6px;} .v-body li{margin-bottom:3px;}
+
+.sp-flag{border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;display:flex;gap:9px;align-items:flex-start;}
+.sp-flag.needs{background:#fff0f0;border:1.5px solid var(--red-bd);}
+.sp-flag.clear{background:var(--green-bg);border:1.5px solid var(--green-bd);}
+.sp-flag.maybe{background:var(--amber-bg);border:1.5px solid var(--amber-bd);}
+.sp-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.sp-flag strong{font-weight:600;display:block;margin-bottom:2px;font-size:12.5px;}
+.sp-flag.needs strong{color:var(--red);} .sp-flag.clear strong{color:var(--green);} .sp-flag.maybe strong{color:var(--amber);}
+.sp-flag p,.sp-flag ul{font-size:12px;line-height:1.5;}
+.sp-flag.needs p,.sp-flag.needs ul{color:#8a3030;} .sp-flag.clear p{color:#0a5c3a;} .sp-flag.maybe p{color:#5a3c08;}
+.sp-flag ul{padding-left:13px;margin-top:3px;} .sp-flag li{margin-bottom:2px;}
+
+.gap-box{background:#fffbf0;border:1px solid var(--amber-bd);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.gap-box h4{font-size:10px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+.gap-box p,.gap-box li{font-size:12px;color:#5a3c08;line-height:1.55;}
+.gap-box ul{padding-left:13px;margin-top:3px;} .gap-box li{margin-bottom:2px;}
+
+.res-box{background:var(--brand-light);border:1px solid rgba(124,92,252,0.18);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.res-box h4{font-size:10px;font-weight:700;color:var(--brand-dark);font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+.res-box a{display:block;font-size:12px;color:var(--brand);text-decoration:none;margin-bottom:3px;}
+.res-box a:hover{text-decoration:underline;} .res-box a::before{content:"→ ";}
+
+.btn-restart-bottom{background:var(--brand);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:12.5px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;}
+.btn-restart-bottom:hover{opacity:.85;}
+
+/* RIGHT — FAQ */
+.panel-right{display:flex;flex-direction:column;background:var(--surface);overflow:hidden;}
+.faq-header{padding:13px 18px 11px;border-bottom:1px solid var(--border);background:var(--nav-bg);flex-shrink:0;}
+.faq-header-top{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.faq-av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.faq-title{font-size:13px;font-weight:600;color:#fff;display:block;}
+.faq-sub{font-size:11px;color:rgba(255,255,255,0.38);}
+.faq-src-link{font-size:10.5px;color:rgba(124,92,252,0.8);text-decoration:none;margin-left:auto;white-space:nowrap;}
+.faq-src-link:hover{color:#c4b8f8;}
+.faq-search-wrap{position:relative;}
+.faq-search{width:100%;border:1px solid rgba(124,92,252,0.25);border-radius:7px;padding:7px 10px 7px 30px;font-size:12.5px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,0.07);color:#fff;outline:none;transition:border-color .15s;}
+.faq-search::placeholder{color:rgba(255,255,255,0.3);}
+.faq-search:focus{border-color:rgba(124,92,252,0.6);}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);font-size:12px;pointer-events:none;}
+
+.faq-cats{display:flex;gap:5px;padding:10px 14px 0;flex-wrap:wrap;flex-shrink:0;border-bottom:1px solid var(--border);}
+.cat-btn{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;margin-bottom:8px;}
+.cat-btn:hover{border-color:var(--brand);color:var(--brand);}
+.cat-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+
+.faq-list{flex:1;overflow-y:auto;padding:12px 14px;}
+.faq-item{border:1px solid var(--border);border-radius:9px;margin-bottom:7px;overflow:hidden;background:var(--surface);}
+.faq-q{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:11px 13px;cursor:pointer;font-size:13px;font-weight:500;line-height:1.4;user-select:none;transition:background .15s;}
+.faq-q:hover{background:var(--bg);}
+.faq-q.open{background:var(--brand-light);color:var(--brand-dark);}
+.faq-chevron{flex-shrink:0;font-size:11px;color:var(--faint);margin-top:2px;transition:transform .2s;}
+.faq-q.open .faq-chevron{transform:rotate(180deg);color:var(--brand);}
+.faq-a{display:none;padding:0 13px 12px;font-size:12.5px;color:var(--muted);line-height:1.65;border-top:1px solid var(--border);}
+.faq-a.open{display:block;}
+.faq-a p{margin-bottom:7px;} .faq-a p:last-child{margin-bottom:0;}
+.faq-a ul{padding-left:14px;margin-bottom:7px;} .faq-a li{margin-bottom:3px;}
+.faq-a ol{padding-left:14px;margin-bottom:7px;} .faq-a ol li{margin-bottom:3px;}
+.faq-a strong{font-weight:600;color:var(--text);}
+.faq-a a{color:var(--brand);text-decoration:none;font-size:11.5px;} .faq-a a:hover{text-decoration:underline;}
+.faq-tag{display:inline-block;font-size:9.5px;font-weight:700;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:20px;text-transform:uppercase;margin:8px 0 6px;letter-spacing:.04em;}
+.tag-overview{background:var(--brand-light);color:var(--brand-dark);}
+.tag-product {background:var(--green-bg);color:var(--green);}
+.tag-hardware{background:var(--amber-bg);color:var(--amber);}
+.tag-deploy  {background:#f0e8ff;color:#5c30b8;}
+.tag-compete {background:var(--red-bg);color:var(--red);}
+.no-results{text-align:center;padding:32px 20px;color:var(--faint);font-size:13px;}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">N</div>
+    Nutanix Enterprise AI
+    <span class="nav-badge">Field Toolkit</span>
+  </div>
+  <div class="nav-right">NAI Opportunity Qualifier · Knowledge Base</div>
+</nav>
+
+<div class="main">
+
+<!-- ══ LEFT: QUALIFIER ══ -->
+<div class="panel-left">
+  <div class="panel-heading"><span class="h-dot"></span><h2>NAI Opportunity Qualifier</h2></div>
+
+  <div class="scorecard">
+    <div class="sc-item"><div class="sc-label">Infrastructure</div><div class="sc-val pend" id="sc-infra">—</div></div>
+    <div class="sc-item"><div class="sc-label">Hardware</div><div class="sc-val pend" id="sc-hw">—</div></div>
+    <div class="sc-item"><div class="sc-label">Use Case</div><div class="sc-val pend" id="sc-uc">—</div></div>
+    <div class="sc-item"><div class="sc-label">Complexity</div><div class="sc-val pend" id="sc-sp">—</div></div>
+  </div>
+
+  <div class="prog-meta">
+    <div class="prog-lbl" id="prog-lbl">Question 1 of 13</div>
+    <div class="prog-lbl" id="prog-section"></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <div id="answered-list"></div>
+  <div id="nav-btns" style="display:none">
+    <div class="nav-btn-row">
+      <button class="btn-back" onclick="goBack()">← Go Back</button>
+      <button class="btn-reset" onclick="confirmReset()">↺ Reset Assessment</button>
+    </div>
+  </div>
+  <div id="q-container"></div>
+  <div id="verdict-wrap" style="display:none"></div>
+</div>
+
+<!-- ══ RIGHT: FAQ ══ -->
+<div class="panel-right">
+  <div class="faq-header">
+    <div class="faq-header-top">
+      <div class="faq-av">N</div>
+      <div>
+        <span class="faq-title">NAI Knowledge Base</span>
+        <span class="faq-sub">Sourced from official Nutanix documentation</span>
+      </div>
+      <a class="faq-src-link" href="https://www.nutanix.com/products/nutanix-enterprise-ai/faq" target="_blank">View full FAQ ↗</a>
+    </div>
+    <div class="faq-search-wrap">
+      <span class="search-icon">⌕</span>
+      <input class="faq-search" type="text" placeholder="Search questions…" oninput="filterFAQ(this.value)"/>
+    </div>
+  </div>
+
+  <div class="faq-cats">
+    <button class="cat-btn active" onclick="setCat('all',this)">All</button>
+    <button class="cat-btn" onclick="setCat('overview',this)">Overview</button>
+    <button class="cat-btn" onclick="setCat('product',this)">Product</button>
+    <button class="cat-btn" onclick="setCat('hardware',this)">Hardware</button>
+    <button class="cat-btn" onclick="setCat('deploy',this)">Deployment</button>
+    <button class="cat-btn" onclick="setCat('compete',this)">Competitive</button>
+  </div>
+
+  <div class="faq-list" id="faq-list"></div>
+</div>
+
+</div>
+
+<script>
+/* ══ FAQ DATA ══ */
+const FAQS = [
+  { cat:'overview', tag:'Overview', q:'What is Nutanix Enterprise AI (NAI)?',
+    a:`<p>NAI offers endpoint APIs for leading LLM providers including NVIDIA NIM and HuggingFace, making it easy to deploy a wide range of generative AI models on-premises or in the public cloud.</p><p>NAI includes a simple UI, role-based access controls (RBAC), and support for dark site / air-gapped deployments — with enterprise resiliency, Day 2 operations, and compliance built in.</p>` },
+  { cat:'overview', tag:'Overview', q:'What is the difference between AI model training, fine-tuning, and inferencing?',
+    a:`<ul><li><strong>Training:</strong> Building a model from scratch — the most comprehensive and compute-intensive process.</li><li><strong>Fine-Tuning:</strong> Adapting a pre-trained model for a specific task or domain.</li><li><strong>Inference:</strong> Applying a trained model to make predictions from new data. This is what NAI is primarily built for.</li></ul><p>Think of it like baking: training is baking the cake, fine-tuning is decorating it, and inference is eating it.</p>` },
+  { cat:'overview', tag:'Overview', q:'What are the three key differentiators of NAI?',
+    a:`<ul><li><strong>Makes IT Resources AI Resources:</strong> Simple workflows to deploy and manage LLMs in minutes — extend existing IT teams into AI without new hires.</li><li><strong>Simplifies LLM Deployment and Operations:</strong> Elegant UI with RBAC, Hugging Face and NVIDIA NIM integration out of the box. Upload your own models for total control.</li><li><strong>Enables Choice:</strong> Runs on any CNCF-certified Kubernetes — NKP, Rancher, Docker, bare metal, EKS, AKS, or GKE. Swap models without changing architecture.</li></ul>` },
+  { cat:'overview', tag:'Overview', q:'What is the difference between Nutanix Enterprise AI and GPT-in-a-Box?',
+    a:`<p>NAI is a licensed product — the AI inferencing control plane. GPT-in-a-Box 2.0 is a validated full-stack solution that bundles NAI together with NKP, NCI, Unified Storage, and professional services. GPT-in-a-Box is the full bundle; NAI is the AI engine inside it.</p>` },
+  { cat:'overview', tag:'Overview', q:'Who should consider Nutanix Enterprise AI?',
+    a:`<p><strong>Existing Nutanix customers:</strong> Leverage existing Nutanix infrastructure and NKP to add GenAI seamlessly.</p><p><strong>Prospective customers:</strong> Use GPT-in-a-Box as a turnkey solution, or bring your own infrastructure — VMware, three-tier, bare metal, or public cloud Kubernetes (EKS, AKS, GKE).</p>` },
+  { cat:'product', tag:'Product', q:'How does Nutanix Enterprise AI work?',
+    a:`<ol><li>Deploy and run NAI on any CNCF-certified Kubernetes environment.</li><li>Log in to the simple UI and pick and deploy the LLM of your choice.</li><li>Create a secure API endpoint. Test it with a preflight query.</li><li>Send the API credentials to your AI developers or application owners.</li></ol>` },
+  { cat:'product', tag:'Product', q:'What are the key features of NAI?',
+    a:`<ul><li>Elegant, enterprise-grade UI</li><li>LLM choice from Hugging Face or NVIDIA NIM</li><li>Upload your own private AI models</li><li>API token creation and management</li><li>Role-based access controls (RBAC)</li><li>AI model preflight testing</li><li>Model and API monitoring, GPU usage monitoring</li><li>Event auditing and Nutanix Pulse reporting</li><li>Full air-gap / dark site support</li></ul>` },
+  { cat:'product', tag:'Product', q:'How is Nutanix Enterprise AI licensed?',
+    a:`<p>Three packages available — details at <a href="https://www.nutanix.com/products/cloud-platform/software-options" target="_blank">nutanix.com/products/cloud-platform/software-options</a>:</p><ul><li><strong>NAI-NKP Bundle:</strong> NAI Pro + Nutanix Kubernetes Platform.</li><li><strong>NAI Standalone:</strong> NAI Pro on any CNCF K8s including public cloud.</li><li><strong>GPT-in-a-Box bundle:</strong> Full stack — NCI, NKP, NUS, and NAI.</li></ul><p>Metered by GPU RAM (GB) for GPU clusters, or vCPUs for CPU-only inference clusters.</p>` },
+  { cat:'product', tag:'Product', q:'Is there a trial license for NAI?',
+    a:`<p>No self-managed trial, but Nutanix offers a free hosted proof-of-concept at <a href="https://www.nutanix.com/one-platform" target="_blank">nutanix.com/testdrive</a> — no setup or hardware required.</p>` },
+  { cat:'product', tag:'Product', q:'Does NAI include NVIDIA NIM integration?',
+    a:`<p>Yes. NAI integrates with NVIDIA NIM using your own NVIDIA NIM API token from the NGC catalog. Developers can access NVIDIA NIM with credits, or license it through NVIDIA AI Enterprise (90-day eval available at <a href="https://build.nvidia.com/explore/discover" target="_blank">build.nvidia.com</a>).</p>` },
+  { cat:'hardware', tag:'Hardware', q:'What GPU hardware does NAI support?',
+    a:`<p>NAI supports NVIDIA GPUs. Specific model compatibility must be verified via the Nutanix Hardware Compatibility List — each server system supports different GPUs and Kubernetes must be configured to leverage them.</p><ul><li><a href="https://portal.nutanix.com/page/documents/compatibility-interoperability-matrix/nvidia-drivers" target="_blank">Nutanix HCL: NVIDIA GPU drivers</a></li><li><a href="https://www.run.ai/guides/multi-gpu/kubernetes-gpu" target="_blank">Enabling Kubernetes to run with GPUs</a></li></ul>` },
+  { cat:'hardware', tag:'Hardware', q:'Does NAI require Nutanix hyperconverged infrastructure (NCI/HCI)?',
+    a:`<p><strong>No.</strong> NAI is a set of containers that can run on any CNCF-certified Kubernetes runtime. NCI is not required. It can run on bare metal, public cloud K8s, or third-party infrastructure — NKP is recommended for the best integrated experience but is also not mandatory.</p>` },
+  { cat:'hardware', tag:'Hardware', q:'What other Nutanix products are typically used with NAI?',
+    a:`<p>The GPT-in-a-Box 2.0 validated stack includes NCI (infrastructure), NKP (Kubernetes), and NUS (Unified Storage). These are the recommended stack components but none are individually required to run NAI Standalone.</p>` },
+  { cat:'deploy', tag:'Deployment', q:'Where can NAI be deployed?',
+    a:`<ul><li>Any CNCF-certified Kubernetes environment (on-premises)</li><li>Nutanix Kubernetes Platform (NKP) — recommended</li><li>Nutanix HCI with AHV hypervisor and GPU nodes</li><li>Bare metal Kubernetes</li><li>Public cloud: AWS EKS, Azure AKS, Google Cloud GKE</li><li>Dark site / air-gapped environments (fully supported)</li></ul>` },
+  { cat:'deploy', tag:'Deployment', q:'Can NAI run in a dark site or air-gapped environment?',
+    a:`<p><strong>Yes.</strong> NAI fully supports disconnected deployments. The dark site bundle is available on the Nutanix support portal — requires login and license entitlement at <a href="https://portal.nutanix.com" target="_blank">portal.nutanix.com</a>.</p>` },
+  { cat:'deploy', tag:'Deployment', q:'Can NAI be deployed in public clouds?',
+    a:`<p><strong>Yes.</strong> NAI has been tested on Google Cloud GKE, Amazon EKS, and Microsoft Azure AKS. Deploying in public cloud lets organizations use NAI within their own VPC with their own access controls — keeping model and data access private even in cloud environments.</p>` },
+  { cat:'deploy', tag:'Deployment', q:'Where can I find technical documentation for NAI?',
+    a:`<ul><li><a href="https://portal.nutanix.com" target="_blank">Nutanix Support Portal — NAI docs and downloads</a></li><li><a href="https://portal.nutanix.com/page/documents/nutanix-validated-design/list" target="_blank">Nutanix Validated Designs (NVDs)</a></li><li><a href="https://www.nutanix.com/products/cloud-platform/software-options" target="_blank">NAI licensing details</a></li></ul>` },
+  { cat:'compete', tag:'Competitive', q:'How does NAI compare to Azure OpenAI?',
+    a:`<p><strong>Data sovereignty is the pivot.</strong> Azure OpenAI is a public endpoint — customer data leaves their environment and is processed by Microsoft. NAI runs inside the customer's own firewall with full IT control.</p><p>Key question to ask: <em>"Is your legal or compliance team comfortable with proprietary data leaving your network?"</em></p><p>NAI gives full control over model selection, API access, user permissions, and data residency — none of which are possible with Azure OpenAI.</p>` },
+  { cat:'compete', tag:'Competitive', q:'How does NAI compare to AWS Bedrock?',
+    a:`<p>Same data sovereignty story as Azure. AWS Bedrock is a managed public service — data flows through Amazon's infrastructure. NAI runs in the customer's own datacenter or VPC with their own controls, not Amazon's managed service.</p><p>For regulated industries (finance, healthcare, defense, government), NAI removes the compliance risk of public AI API usage entirely.</p>` },
+  { cat:'compete', tag:'Competitive', q:'How does NAI compare to VMware Private AI Foundation (Broadcom)?',
+    a:`<p>VMware Private AI Foundation is tied to the vSphere stack — you need their hypervisor. NAI is hypervisor-agnostic and runs on any CNCF Kubernetes anywhere: bare metal, NCI, vSphere, or public cloud.</p><p>With Broadcom's VMware licensing changes causing significant customer concern, NAI offers a path to private enterprise AI with zero Broadcom dependency.</p>` },
+  { cat:'compete', tag:'Competitive', q:'How does NAI compare to building a custom AI stack?',
+    a:`<p>NAI replaces a complex custom build with a push-button control plane. Without NAI, teams must manually manage model downloads, containerization, API security, GPU configuration, monitoring, and versioning.</p><p>The pitch: <em>"NAI lets your existing IT team become your AI team — no new hires, no custom tooling, no months of infrastructure work."</em></p>` }
+];
+
+let activeCat='all', searchTerm='';
+
+function renderFAQ(){
+  const list=document.getElementById('faq-list');
+  const filtered=FAQS.filter(f=>{
+    const catMatch=activeCat==='all'||f.cat===activeCat;
+    const sm=!searchTerm||f.q.toLowerCase().includes(searchTerm)||f.a.toLowerCase().includes(searchTerm);
+    return catMatch&&sm;
+  });
+  if(!filtered.length){ list.innerHTML=`<div class="no-results">No results found for "<strong>${searchTerm}</strong>"</div>`; return; }
+  list.innerHTML=filtered.map((f,i)=>`
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFAQ(this)"><span>${f.q}</span><span class="faq-chevron">▾</span></div>
+      <div class="faq-a"><div style="padding-top:10px"><span class="faq-tag tag-${f.cat}">${f.tag}</span>${f.a}</div></div>
+    </div>`).join('');
+}
+
+function toggleFAQ(qEl){
+  const aEl=qEl.nextElementSibling;
+  const isOpen=qEl.classList.contains('open');
+  document.querySelectorAll('.faq-q').forEach(e=>e.classList.remove('open'));
+  document.querySelectorAll('.faq-a').forEach(e=>e.classList.remove('open'));
+  if(!isOpen){ qEl.classList.add('open'); aEl.classList.add('open'); }
+}
+
+function setCat(cat,btn){
+  activeCat=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFAQ();
+}
+
+function filterFAQ(val){ searchTerm=val.toLowerCase().trim(); renderFAQ(); }
+
+/* ══ QUESTIONS ══ */
+const QS = [
+  /* INFRASTRUCTURE */
+  { id:'q1', section:'Infrastructure', sdClass:'sd-infra',
+    text:'Does the customer currently run any CNCF-certified Kubernetes environment?',
+    hint:'NAI runs on ANY CNCF Kubernetes — NKP, Rancher, EKS, AKS, GKE, bare metal, and more. NKP is recommended for the tightest integration.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq',
+    scoreKey:'infra', yS:'✓', nS:'?', uS:'?', yN:'q2', nN:'q1b', uN:'q1b' },
+  { id:'q1b', section:'Infrastructure', sdClass:'sd-infra',
+    text:'Is the customer open to adopting a Kubernetes platform (NKP, EKS, AKS, GKE, or other CNCF K8s) as part of this project?',
+    hint:'NAI needs a CNCF Kubernetes layer. It does not need to be Nutanix hardware — even a public cloud K8s cluster qualifies for the NAI Standalone SKU.',
+    src:'nutanix.com/products/cloud-platform/software-options (NAI Standalone SKU)',
+    scoreKey:'infra', yS:'✓', nS:'✗', uS:'?', yN:'q2', nN:'dead_k8s', uN:'q2' },
+
+  /* HARDWARE */
+  { id:'q2', section:'Hardware', sdClass:'sd-hardware',
+    text:'Does the customer have NVIDIA GPUs available in their environment?',
+    hint:'NAI supports NVIDIA GPUs for LLM inferencing. Specific model compatibility must be verified via the Nutanix HCL at portal.nutanix.com.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq — "Which AI Accelerators does NAI support?"',
+    scoreKey:'hw', yS:'✓', nS:'?', uS:'?', yN:'q3', nN:'q2b', uN:'q2b' },
+  { id:'q2b', section:'Hardware', sdClass:'sd-hardware',
+    text:'Is the customer open to a hardware refresh or adding NVIDIA GPU nodes as part of this project?',
+    hint:'GPU nodes can be added to existing infrastructure. This may become a combined hardware and software opportunity through a Nutanix partner or OEM.',
+    src:'nutanix.com/products/hardware-platforms · portal.nutanix.com (HCL)',
+    scoreKey:'hw', yS:'✓', nS:'✗', uS:'?', yN:'q3', nN:'dead_hw', uN:'q3' },
+
+  /* USE CASE */
+  { id:'q3', section:'Use Case', sdClass:'sd-usecase',
+    text:'Is the customer looking to run private, secure AI inferencing — keeping their data inside their own infrastructure?',
+    hint:'This is the core NAI value proposition: sovereign AI where data never leaves the customer\'s environment. Sharpest competitive angle against public cloud AI services.',
+    src:'nutanix.com/products/nutanix-enterprise-ai',
+    scoreKey:'uc', yS:'✓', nS:'?', uS:'?', yN:'q4', nN:'q3b', uN:'q4' },
+  { id:'q3b', section:'Use Case', sdClass:'sd-usecase',
+    text:'Does the customer have data sovereignty, regulatory compliance, or air-gap requirements?',
+    hint:'NAI fully supports air-gapped and dark site deployments. Regulated industries — finance, healthcare, defense, government — are prime NAI targets.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq — "Can NAI run in a dark-site/air-gapped environment?"',
+    scoreKey:'uc', yS:'✓', nS:'✗', uS:'?', yN:'q4', nN:'dead_uc', uN:'q4' },
+  { id:'q4', section:'Use Case', sdClass:'sd-usecase',
+    text:'Does the customer have a specific AI use case in mind? (e.g. RAG chatbot, document Q&A, code assist, agentic workflows)',
+    hint:'Defined use cases accelerate deal cycles significantly. RAG with private data and agentic AI pipelines are top NAI sweet spots.',
+    src:'nutanix.com/products/nutanix-enterprise-ai',
+    scoreKey:'uc', yS:'✓', nS:'?', uS:'?', yN:'sp1', nN:'sp1', uN:'sp1' },
+
+  /* DEAL COMPLEXITY */
+  { id:'sp1', section:'Deal Complexity', sdClass:'sd-complexity',
+    text:'Is the customer asking about running multiple different AI models simultaneously in production?',
+    hint:'Multi-model production deployments require careful GPU resource planning, namespace isolation, and endpoint management — this increases project complexity and scoping time.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq',
+    scoreKey:'sp', yS:'+1', nS:'0', uS:'0', yN:'sp2', nN:'sp2', uN:'sp2' },
+  { id:'sp2', section:'Deal Complexity', sdClass:'sd-complexity',
+    text:'Is the customer asking about model fine-tuning or retraining an existing model on their own data?',
+    hint:'Fine-tuning adapts a pre-existing model for a specific domain. This goes beyond standard inferencing and requires scoping of training data, compute, and storage requirements.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq — Training vs. Fine-tuning vs. Inference',
+    scoreKey:'sp', yS:'+1', nS:'0', uS:'0', yN:'sp3', nN:'sp3', uN:'sp3' },
+  { id:'sp3', section:'Deal Complexity', sdClass:'sd-complexity',
+    text:'Is the customer asking about connecting AI to many internal systems, tools, or data sources (agentic workflows)?',
+    hint:'Agentic AI that connects to internal tools, APIs, and data sources involves integration architecture beyond a standard NAI deployment — this adds scoping complexity.',
+    src:'nutanix.com press release — Nutanix Agentic AI, March 2026',
+    scoreKey:'sp', yS:'+1', nS:'0', uS:'0', yN:'sp4', nN:'sp4', uN:'sp4' },
+  { id:'sp4', section:'Deal Complexity', sdClass:'sd-complexity',
+    text:'Is the customer asking about GPU cluster sizing for 50+ users or large-scale production AI workloads?',
+    hint:'Right-sizing GPU infrastructure for large concurrent workloads requires specialist knowledge of throughput, token rates, and hardware validation against the Nutanix HCL.',
+    src:'nutanix.com/products/nutanix-enterprise-ai/faq — "What GPUs are supported?"',
+    scoreKey:'sp', yS:'+1', nS:'0', uS:'0', yN:'final', nN:'final', uN:'final' }
+];
+
+const TOTAL=QS.length;
+let curQ=null, wfHist=[], scores={infra:'—',hw:'—',uc:'—'}, spFlags=0, seenSections={};
+
+function getQ(id){ return QS.find(q=>q.id===id); }
+
+function startWorkflow(){
+  wfHist=[]; scores={infra:'—',hw:'—',uc:'—'}; spFlags=0; seenSections={};
+  document.getElementById('answered-list').innerHTML='';
+  document.getElementById('verdict-wrap').style.display='none';
+  document.getElementById('q-container').style.display='block';
+  document.getElementById('nav-btns').style.display='none';
+  setSpScore('—','pend');
+  updateScores(); showQ('q1');
+}
+
+function confirmReset(){
+  if(wfHist.length===0) return;
+  if(confirm('Reset the assessment and start over?')) startWorkflow();
+}
+
+function showQ(id){
+  const q=getQ(id); if(!q) return;
+  curQ=q; updateProgress(); renderNavBtns();
+
+  // Add section divider only if this section hasn't been shown yet
+  const list=document.getElementById('answered-list');
+  if(!seenSections[q.section]){
+    seenSections[q.section]=true;
+    const div=document.createElement('div');
+    div.className='sec-divider';
+    div.dataset.section=q.section;
+    div.innerHTML=`<div class="sd-line"></div><span class="${q.sdClass}">${q.section}</span><div class="sd-line"></div>`;
+    list.appendChild(div);
+  }
+
+  document.getElementById('q-container').innerHTML=`
+    <div class="q-card">
+      <div class="q-text">${q.text}</div>
+      <div class="q-hint">${q.hint}</div>
+      <div class="q-src">${q.src}</div>
+      <div class="btn-row">
+        <button class="btn-ans yes"    onclick="answer('yes')">✓ Yes</button>
+        <button class="btn-ans no"     onclick="answer('no')">✗ No</button>
+        <button class="btn-ans unsure" onclick="answer('unsure')">? Unsure</button>
+      </div>
+    </div>`;
+}
+
+function renderNavBtns(){
+  document.getElementById('nav-btns').style.display = wfHist.length>0 ? 'block' : 'none';
+}
+
+function goBack(){
+  if(!wfHist.length) return;
+  const last=wfHist.pop();
+
+  // Revert score
+  if(last.q.scoreKey==='sp'&&last.choice==='yes') spFlags=Math.max(0,spFlags-1);
+  else if(last.q.scoreKey&&last.q.scoreKey!=='sp'){
+    scores={infra:'—',hw:'—',uc:'—'}; spFlags=0;
+    wfHist.forEach(h=>applyScore(h.q,h.choice));
+  }
+  updateScores();
+
+  // Remove last answered-item from the list
+  const list=document.getElementById('answered-list');
+  const items=list.querySelectorAll('.answered-item');
+  if(items.length) items[items.length-1].remove();
+
+  // Remove section divider if no answered-items remain in that section
+  // Check all dividers — remove any that have no answered-item siblings before the next divider
+  const allDividers=Array.from(list.querySelectorAll('.sec-divider'));
+  allDividers.forEach(div=>{
+    const sec=div.dataset.section;
+    let el=div.nextElementSibling;
+    let hasItem=false;
+    while(el&&!el.classList.contains('sec-divider')){
+      if(el.classList.contains('answered-item')) hasItem=true;
+      el=el.nextElementSibling;
+    }
+    if(!hasItem){
+      div.remove();
+      delete seenSections[sec];
+    }
+  });
+
+  document.getElementById('verdict-wrap').style.display='none';
+  document.getElementById('q-container').style.display='block';
+  updateProgress();
+  showQ(last.q.id);
+}
+
+function applyScore(q,choice){
+  const v=choice==='yes'?q.yS:choice==='no'?q.nS:q.uS;
+  if(q.scoreKey==='sp'){ if(v==='+1') spFlags++; }
+  else if(q.scoreKey) scores[q.scoreKey]=v;
+}
+
+function answer(choice){
+  const q=curQ; if(!q) return;
+  applyScore(q,choice); updateScores(); wfHist.push({q,choice});
+  const sym=choice==='yes'?'✓':choice==='no'?'✗':'?';
+  const ic=choice==='yes'?'yes':choice==='no'?'no':'unsure';
+  const lbl=choice==='yes'?'Yes':choice==='no'?'No':'Unsure';
+  const d=document.createElement('div');
+  d.className='answered-item';
+  d.innerHTML=`<div class="a-ic ${ic}">${sym}</div><div><div class="a-q">${q.text}</div><div class="a-m">${q.section} · ${lbl}</div></div>`;
+  document.getElementById('answered-list').appendChild(d);
+  document.getElementById('q-container').innerHTML='';
+  handleNext(choice==='yes'?q.yN:choice==='no'?q.nN:q.uN);
+}
+
+function handleNext(id){
+  updateProgress();
+  if(id==='dead_k8s'){
+    showVerdict('red','Kubernetes Gap — Not Ready Yet',
+      'NAI requires a CNCF-certified Kubernetes environment. The customer is not running one and is not open to adopting one — there is no path to NAI without this layer.',
+      ['Position as a Kubernetes + AI conversation. NKP on bare metal or public cloud is a low-friction on-ramp.','A free NKP test drive is available at nutanix.com/one-platform.','Revisit when the customer begins a platform modernization initiative.'],null,
+      [{label:'NAI FAQ — Kubernetes requirements',url:'https://www.nutanix.com/products/nutanix-enterprise-ai/faq'},{label:'NKP overview',url:'https://www.nutanix.com/products/kubernetes-management-platform'},{label:'Free NAI test drive',url:'https://www.nutanix.com/one-platform'}],
+      {title:'Questions to ask next time:',items:['What is your current virtualization or container strategy?','Are you evaluating any Kubernetes platforms?','What is your infrastructure refresh timeline?']});
+  } else if(id==='dead_hw'){
+    showVerdict('amber','Hardware Gap — Needs More Work',
+      'The customer lacks supported NVIDIA GPU hardware and is not open to a hardware refresh. LLM inferencing requirements cannot be met with current infrastructure.',
+      ['Build a business case for GPU investment tied to cost-per-token vs. public cloud AI API spend.','Explore the Nutanix hardware partner ecosystem for GPU node options.','Re-engage when their hardware refresh cycle begins.'],null,
+      [{label:'Nutanix HCL — NVIDIA GPU compatibility',url:'https://portal.nutanix.com/page/documents/compatibility-interoperability-matrix/nvidia-drivers'},{label:'Nutanix hardware platforms',url:'https://www.nutanix.com/products/hardware-platforms'},{label:'NAI hardware FAQ',url:'https://www.nutanix.com/products/nutanix-enterprise-ai/faq'}],
+      {title:'Questions to ask next time:',items:['What is your hardware refresh roadmap for the next 12 months?','What are you spending on public cloud AI APIs that we could replace on-prem?','Have you priced out adding GPU nodes to your existing cluster?']});
+  } else if(id==='dead_uc'){
+    showVerdict('amber','Use Case Undefined — Needs Nurturing',
+      'No clear AI use case or compliance driver exists today. Without a defined problem it is hard to justify a private AI platform investment.',
+      ['Run a NAI discovery or whiteboard session — many customers have latent AI needs they haven\'t articulated.','Share NAI reference architectures and customer stories for their industry.','Ask about their current AI tool usage as a starting point.'],null,
+      [{label:'NAI use cases and customer stories',url:'https://www.nutanix.com/products/nutanix-enterprise-ai'},{label:'NAI FAQ',url:'https://www.nutanix.com/products/nutanix-enterprise-ai/faq'},{label:'Nutanix AI solutions',url:'https://www.nutanix.com/solutions/ai'}],
+      {title:'Questions to surface a use case:',items:['Are your developers or data science teams building any AI applications today?','Where in the business are you using public AI tools like ChatGPT or Copilot?','Do you have compliance requirements that prevent using public AI APIs?']});
+  } else if(id==='final'){
+    const allPass=scores.infra==='✓'&&scores.hw==='✓'&&scores.uc==='✓';
+    const hasGap=Object.entries(scores).some(([k,v])=>k!=='sp'&&v==='?');
+    const needsSp=spFlags>=3, maybeSp=spFlags>=1&&spFlags<3;
+    let type,title,body,bullets;
+    if(allPass){ type='green'; title='✓ Qualified NAI Opportunity'; body='Strong NAI fundamentals confirmed across all three pillars. Kubernetes, hardware, and use case prerequisites are met. Move forward with confidence.'; bullets=['Schedule a NAI demo or POC with your SE.','Prepare data sovereignty positioning against their current cloud AI spend.','Confirm which models the customer wants to run and validate GPU compatibility via the Nutanix HCL.']; }
+    else if(hasGap){ type='amber'; title='Possible NAI Op — Close the Gaps'; body='Real potential here, but unanswered items need qualifying before committing SE resources. The gaps are closeable.'; bullets=['Follow up on each Unsure answer with targeted discovery questions.','Involve an SE for a technical discovery call to validate hardware and Kubernetes.','Use the NAI Knowledge Base on the right for competitive and technical talking points.']; }
+    else { type='red'; title='Weak NAI Fit Right Now'; body='One or more critical prerequisites are not confirmed. This does not mean the deal is permanently dead — more groundwork is needed first.'; bullets=['Identify which pillar is weakest and address it first.','Use this as a platform modernization conversation.','Re-qualify in 30–60 days after addressing discovery gaps.']; }
+    showVerdict(type,title,body,bullets,needsSp?'yes':maybeSp?'maybe':'no',
+      [{label:'NAI product page',url:'https://www.nutanix.com/products/nutanix-enterprise-ai'},{label:'NAI FAQ',url:'https://www.nutanix.com/products/nutanix-enterprise-ai/faq'},{label:'NAI licensing details',url:'https://www.nutanix.com/products/cloud-platform/software-options'},{label:'Nutanix support portal',url:'https://portal.nutanix.com'}],null);
+  } else { showQ(id); }
+}
+
+function showVerdict(type,title,body,bullets,spResult,resources,gapCoach){
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('prog-lbl').textContent='Assessment Complete';
+  document.getElementById('prog-section').textContent='';
+  document.getElementById('q-container').style.display='none';
+  renderNavBtns();
+
+  let spHTML='';
+  if(spResult==='yes'){
+    spHTML=`<div class="sp-flag needs"><div class="sp-icon">🎯</div><div><strong>Specialist Involvement Recommended</strong><p>This deal has multiple complex requirements that go beyond a standard NAI deployment. Looping in a Nutanix AI Specialist or Solutions Architect before the next customer call will make a real difference in scoping accuracy.</p><ul><li>Do not commit to timelines on fine-tuning, multi-agent, or large-scale GPU sizing without specialist input.</li><li>Bring the specialist in early — it's easier to right-size upfront than to reset expectations later.</li></ul></div></div>`;
+    setSpScore('High','fail');
+  } else if(spResult==='maybe'){
+    spHTML=`<div class="sp-flag maybe"><div class="sp-icon">⚠️</div><div><strong>Some Complexity Flagged</strong><p>One or two requirements add complexity beyond a standard deployment. Your SE can likely handle this, but looping in a specialist for a quick review call is worth considering before committing to scope.</p></div></div>`;
+    setSpScore('Mid','warn');
+  } else if(spResult==='no'){
+    spHTML=`<div class="sp-flag clear"><div class="sp-icon">✓</div><div><strong>Standard Deployment Scope</strong><p>This deal looks like a standard NAI deployment. Your SE can handle the technical conversation supported by the NAI Knowledge Base on the right.</p></div></div>`;
+    setSpScore('Low','pass');
+  }
+
+  let gapHTML='';
+  if(gapCoach){ gapHTML=`<div class="gap-box"><h4>${gapCoach.title}</h4><ul>${gapCoach.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`; }
+
+  let resHTML='';
+  if(resources&&resources.length){ resHTML=`<div class="res-box"><h4>Helpful Resources</h4>${resources.map(r=>`<a href="${r.url}" target="_blank">${r.label}</a>`).join('')}</div>`; }
+
+  document.getElementById('verdict-wrap').style.display='block';
+  document.getElementById('verdict-wrap').innerHTML=`
+    ${spHTML}
+    <div class="verdict-card ${type}">
+      <span class="v-badge">${type==='green'?'Qualified':type==='amber'?'Needs Attention':'Not Qualified'}</span>
+      <div class="v-title">${title}</div>
+      <div class="v-body"><p>${body}</p><ul>${bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>
+    </div>
+    ${gapHTML}${resHTML}
+    <button class="btn-restart-bottom" onclick="startWorkflow()">↺ Start New Assessment</button>`;
+}
+
+function setSpScore(val,cls){
+  const el=document.getElementById('sc-sp');
+  el.textContent=val; el.className='sc-val '+cls;
+}
+
+function updateScores(){
+  const map={infra:'sc-infra',hw:'sc-hw',uc:'sc-uc'};
+  Object.entries(map).forEach(([k,id])=>{
+    const el=document.getElementById(id),v=scores[k];
+    el.textContent=v;
+    el.className='sc-val '+(v==='✓'?'pass':v==='✗'?'fail':v==='?'?'warn':'pend');
+  });
+}
+
+function updateProgress(){
+  const done=document.getElementById('verdict-wrap').style.display!=='none';
+  const pct=done?100:Math.min(Math.round((wfHist.length/TOTAL)*100)+8,93);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=done?'Assessment Complete':`Question ${Math.min(wfHist.length+1,TOTAL)} of ${TOTAL}`;
+  if(curQ&&!done) document.getElementById('prog-section').textContent=curQ.section;
+}
+
+renderFAQ();
+startWorkflow();
+</script>
+</body>
+</html>
